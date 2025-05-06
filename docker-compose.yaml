@@ -1,0 +1,29 @@
+name: airsonic
+services:
+  server:
+    image: lscr.io/linuxserver/airsonic-advanced:latest
+    container_name: airsonic
+    hostname: ${BASE_HOST_NAME:-airsonic}
+    restart: always
+    pull_policy: always
+    environment:
+      - PUID=0
+      - PGID=0
+      - CONTEXT_PATH=/
+      - TZ=${TZ:-America/New_York}
+      - JAVA_OPTS=-Xmx512m -Xms512m -Dserver.use-forward-headers=true
+    volumes:
+      - /mnt/Music/Mp3:/music
+      - /mnt/Podcasts:/podcasts
+      - /mnt/Playlists:/playlists
+      - /mnt/Music/Nightcore:/media
+      - '/var/lib/srv/${USER}/docker/linuxserver/airsonic-advanced/latest/config/airsonic:/config'
+    ports:
+      - '172.17.0.1:59089:4040'
+    networks:
+      - airsonic
+
+networks:
+  airsonic:
+    name: airsonic
+    external: false
