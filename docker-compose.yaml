@@ -1,11 +1,20 @@
+# nginx proxy address - http://172.17.0.1:59089
+
 name: airsonic
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
 services:
   server:
     image: lscr.io/linuxserver/airsonic-advanced:latest
     container_name: airsonic
-    hostname: ${BASE_HOST_NAME:-airsonic}
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
     restart: always
     pull_policy: always
+    logging: *default-logging
     environment:
       - PUID=0
       - PGID=0
