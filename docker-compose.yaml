@@ -1,0 +1,37 @@
+# nginx proxy address - http://172.17.0.1:59089
+
+name: airsonic
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  server:
+    image: lscr.io/linuxserver/airsonic-advanced:latest
+    container_name: airsonic-server
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      PUID: ${SERVICE_USER:-0}
+      PGID: ${SERVICE_GROUP:-0}
+      CONTEXT_PATH: /
+      JAVA_OPTS: -Xmx512m -Xms512m -Dserver.use-forward-headers=true
+    ports:
+      - '172.17.0.1:59089:4040'
+    volumes:
+      - './rootfs/data/media/music:/music'
+      - './rootfs/data/media/podcasts:/podcasts'
+      - './rootfs/data/media/playlists:/playlists'
+      - './rootfs/data/airsonic:/config'
+    networks:
+      - airsonic
+
+networks:
+  airsonic:
+    name: airsonic
+    external: false
