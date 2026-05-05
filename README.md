@@ -47,10 +47,10 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/data/media/music` - Data storage
-- `./rootfs/data/media/podcasts` - Data storage
-- `./rootfs/data/media/playlists` - Data storage
-- `./rootfs/data/airsonic` - Data storage
+- `./volumes/data/media/music` - Data storage
+- `./volumes/data/media/podcasts` - Data storage
+- `./volumes/data/media/playlists` - Data storage
+- `./volumes/data/airsonic` - Data storage
 
 ## 🔍 Logging
 
