@@ -24,10 +24,10 @@ services:
     ports:
       - '172.17.0.1:59089:4040'
     volumes:
-      - './rootfs/data/media/music:/music'
-      - './rootfs/data/media/podcasts:/podcasts'
-      - './rootfs/data/media/playlists:/playlists'
-      - './rootfs/data/airsonic:/config'
+      - './volumes/data/media/music:/music'
+      - './volumes/data/media/podcasts:/podcasts'
+      - './volumes/data/media/playlists:/playlists'
+      - './volumes/data/airsonic:/config'
     networks:
       - airsonic
 
