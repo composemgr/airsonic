@@ -17,6 +17,8 @@ services:
     logging: *default-logging
     environment:
       TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: airsonic-server
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
       PUID: ${SERVICE_USER:-0}
       PGID: ${SERVICE_GROUP:-0}
       CONTEXT_PATH: /
@@ -28,10 +30,32 @@ services:
       - './volumes/data/media/podcasts:/podcasts'
       - './volumes/data/media/playlists:/playlists'
       - './volumes/data/airsonic:/config'
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://airsonic-server:4040'
+      - 'cloudflare.hostname=airsonic.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.airsonic-server.entrypoints=http'
+      - 'traefik.http.routers.airsonic-server-secure.tls=true'
+      - 'traefik.http.routers.airsonic-server.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.airsonic-server-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.airsonic-server.middlewares=airsonic-server-https-redirect'
+      - 'traefik.http.routers.airsonic-server-secure.entrypoints=https'
+      - 'traefik.http.routers.airsonic-server-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.airsonic-server-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.airsonic-server-secure.service=airsonic-server'
+      - 'traefik.http.services.airsonic-server.loadbalancer.server.port=4040'
     networks:
       - airsonic
+      - proxy
+      - cloudflare
 
 networks:
   airsonic:
     name: airsonic
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
