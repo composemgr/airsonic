@@ -1,0 +1,51 @@
+name: airsonic
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  server:
+    image: lscr.io/linuxserver/airsonic-advanced:latest
+    container_name: airsonic-server
+    domainname: ${BASE_DOMAIN_NAME:-example.com}
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      CONTAINER_NAME: airsonic-server
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
+      PUID: ${SERVICE_USER:-1000}
+      PGID: ${SERVICE_GROUP:-1000}
+      CONTEXT_PATH: /
+      JAVA_OPTS: -Xmx512m -Xms512m -Dserver.use-forward-headers=true
+    volumes:
+      - './volumes/data/media/music:/music'
+      - './volumes/data/media/podcasts:/podcasts'
+      - './volumes/data/media/playlists:/playlists'
+      - './volumes/config/airsonic:/config'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=traefik'
+      - 'traefik.http.routers.airsonic-server.entrypoints=http'
+      - 'traefik.http.routers.airsonic-server.rule=Host(`${BASE_HOST_NAME:-$HOSTNAME}`)'
+      - 'traefik.http.routers.airsonic-server.middlewares=airsonic-server-https-redirect'
+      - 'traefik.http.middlewares.airsonic-server-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.airsonic-server-secure.entrypoints=https'
+      - 'traefik.http.routers.airsonic-server-secure.rule=Host(`${BASE_HOST_NAME:-$HOSTNAME}`)'
+      - 'traefik.http.routers.airsonic-server-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.airsonic-server-secure.service=airsonic-server'
+      - 'traefik.http.services.airsonic-server.loadbalancer.server.port=4040'
+    networks:
+      - airsonic
+      - traefik
+
+networks:
+  airsonic:
+    name: airsonic
+    external: false
+  traefik:
+    external: true

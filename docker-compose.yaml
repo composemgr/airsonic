@@ -1,4 +1,4 @@
-# nginx proxy address - http://172.17.0.1:59089
+# nginx proxy address - http://172.17.0.1:64105
 
 name: airsonic
 x-logging: &default-logging
@@ -11,6 +11,7 @@ services:
   server:
     image: lscr.io/linuxserver/airsonic-advanced:latest
     container_name: airsonic-server
+    domainname: ${BASE_DOMAIN_NAME:-example.com}
     hostname: ${BASE_HOST_NAME:-$HOSTNAME}
     restart: always
     pull_policy: always
@@ -19,43 +20,21 @@ services:
       TZ: ${TZ:-America/New_York}
       CONTAINER_NAME: airsonic-server
       HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
-      PUID: ${SERVICE_USER:-0}
-      PGID: ${SERVICE_GROUP:-0}
+      PUID: ${SERVICE_USER:-1000}
+      PGID: ${SERVICE_GROUP:-1000}
       CONTEXT_PATH: /
       JAVA_OPTS: -Xmx512m -Xms512m -Dserver.use-forward-headers=true
     ports:
-      - '172.17.0.1:59089:4040'
+      - '172.17.0.1:64105:4040'
     volumes:
       - './volumes/data/media/music:/music'
       - './volumes/data/media/podcasts:/podcasts'
       - './volumes/data/media/playlists:/playlists'
-      - './volumes/data/airsonic:/config'
-    labels:
-      - 'traefik.enable=true'
-      - 'cloudflare.enable=true'
-      - 'traefik.docker.network=proxy'
-      - 'cloudflare.service=http://airsonic-server:4040'
-      - 'cloudflare.hostname=airsonic.${CLOUDFLARE_ZONE_NAME:-}'
-      - 'traefik.http.routers.airsonic-server.entrypoints=http'
-      - 'traefik.http.routers.airsonic-server-secure.tls=true'
-      - 'traefik.http.routers.airsonic-server.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
-      - 'traefik.http.middlewares.airsonic-server-https-redirect.redirectscheme.scheme=https'
-      - 'traefik.http.routers.airsonic-server.middlewares=airsonic-server-https-redirect'
-      - 'traefik.http.routers.airsonic-server-secure.entrypoints=https'
-      - 'traefik.http.routers.airsonic-server-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
-      - 'traefik.http.routers.airsonic-server-secure.tls.certresolver=cloudflare'
-      - 'traefik.http.routers.airsonic-server-secure.service=airsonic-server'
-      - 'traefik.http.services.airsonic-server.loadbalancer.server.port=4040'
+      - './volumes/config/airsonic:/config'
     networks:
       - airsonic
-      - proxy
-      - cloudflare
 
 networks:
   airsonic:
     name: airsonic
     external: false
-  proxy:
-    external: true
-  cloudflare:
-    external: true
