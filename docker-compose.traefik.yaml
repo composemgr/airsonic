@@ -22,6 +22,12 @@ services:
       PGID: ${SERVICE_GROUP:-1000}
       CONTEXT_PATH: /
       JAVA_OPTS: -Xmx512m -Xms512m -Dserver.use-forward-headers=true
+    healthcheck:
+      test: ['CMD', 'curl', '-s', '-o', '/dev/null', '--max-time', '5', 'http://127.0.0.1:4040/']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     volumes:
       - './volumes/data/media/music:/music'
       - './volumes/data/media/podcasts:/podcasts'
